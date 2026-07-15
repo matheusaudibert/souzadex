@@ -16,7 +16,6 @@ const SOUZAS = [
   { file: "souza-fenomeno.png", author: "Davi-Oliveira-Brito", authorId: 104875340 },
   { file: "souza grinch.png", author: "dwego", authorId: 97767711 },
   { file: "souza-dora-aventureira.png", author: "eovinicius", authorId: 124585487 },
-  { file: "super-luigi-souza.png", author: "dwego", authorId: 97767711 },
-  { file: "super-mario-souza.png", author: "dwego", authorId: 97767711 },
   { file: "souza-simpsons.png", author: "eovinicius", authorId: 124585487 },
+  { file: "super luigi souza.png", author: "dwego", authorId: 97767711 },
 ];
