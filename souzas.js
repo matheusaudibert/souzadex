@@ -6,4 +6,5 @@ const SOUZAS = [
   { file: "Souza-kawaii.jpg", author: "matheusaudibert" },
   { file: "Souza-minions.jpg", author: "matheusaudibert" },
   { file: "Souza-Buzz-Lightyear.jpg", author: "matheusaudibert" },
+  { file: "Souza-Megabrain.png", author: "brielgaa" },
 ];
