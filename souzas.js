@@ -13,4 +13,5 @@ const SOUZAS = [
   { file: "souza-grande.png", author: "annaluizapm", authorId: 133927691 },
   { file: "souza-inter.png", author: "annaluizapm", authorId: 133927691 },
   { file: "souzatrix.png", author: "caiolucasbittencourt", authorId: 204911984 },
+  { file: "souza-fenomeno.png", author: "Davi-Oliveira-Brito", authorId: 104875340 },
 ];
