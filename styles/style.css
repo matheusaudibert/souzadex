@@ -218,7 +218,7 @@ a:hover {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 32px;
-  padding-bottom: 48px;
+  padding-bottom: 32px;
 }
 
 @media (max-width: 1024px) {
@@ -237,6 +237,126 @@ a:hover {
   .grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-input {
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 360px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input:hover {
+  border-color: var(--text-muted);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--link);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+}
+
+.page-size-control {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+.page-size-control select {
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.page-size-control select:hover {
+  border-color: var(--text-muted);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 48px;
+}
+
+.pagination:empty {
+  display: none;
+}
+
+.page-link,
+.page-current,
+.page-disabled,
+.page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  font-size: 15px;
+}
+
+.page-link {
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.page-link:hover {
+  text-decoration: none;
+  border-color: var(--text-muted);
+  box-shadow: 0 2px 8px rgba(31, 35, 40, 0.08);
+}
+
+.page-current {
+  color: #fff;
+  background: var(--link);
+  border: 1px solid var(--link);
+  font-weight: 600;
+}
+
+.page-disabled {
+  color: var(--text-muted);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  opacity: 0.5;
+}
+
+.page-ellipsis {
+  color: var(--text-muted);
 }
 
 /* Card */
