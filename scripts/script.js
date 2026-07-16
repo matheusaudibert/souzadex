@@ -7,6 +7,7 @@
   var grid = document.getElementById("grid");
   var pagination = document.getElementById("pagination");
   var sizeSelect = document.getElementById("page-size");
+  var searchInput = document.getElementById("search");
 
   function titleFromFile(file) {
     return file.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").toLowerCase();
@@ -56,11 +57,18 @@
     return SIZE_OPTIONS.indexOf(raw) !== -1 ? raw : DEFAULT_SIZE;
   }
 
-  var pageSize = currentSize();
+  // Lê o termo de busca da URL (?q=...), normalizado (trim + minúsculo).
+  function currentQuery() {
+    return (new URLSearchParams(window.location.search).get("q") || "").trim().toLowerCase();
+  }
 
-  // Monta a URL preservando o tamanho escolhido (omitindo o que for padrão).
-  function urlFor(page, size) {
+  var pageSize = currentSize();
+  var query = currentQuery();
+
+  // Monta a URL preservando tamanho e busca escolhidos (omitindo o que for padrão/vazio).
+  function urlFor(page, size, q) {
     var params = new URLSearchParams();
+    if (q) params.set("q", q);
     if (size !== DEFAULT_SIZE) params.set("size", size);
     if (page > 1) params.set("page", page);
     var qs = params.toString();
@@ -68,7 +76,13 @@
   }
 
   function pageHref(page) {
-    return urlFor(page, pageSize);
+    return urlFor(page, pageSize, query);
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, function (ch) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+    });
   }
 
   function cardHtml(entry) {
@@ -129,87 +143,119 @@
     });
 
     sizeSelect.addEventListener("change", function () {
-      window.location.href = urlFor(1, parseInt(this.value, 10));
+      window.location.href = urlFor(1, parseInt(this.value, 10), query);
     });
   }
 
-  function render(souzas) {
-    // souzas está em ordem cronológica; exibimos os mais recentes primeiro, mas
-    // mantendo o número original (posição de chegada) de cada card.
-    var items = souzas.map(function (souza, index) {
-      return { souza: souza, number: index + 1 };
-    }).reverse();
+  // Todos os cards já com número original, na ordem de exibição (mais recentes
+  // primeiro). Preenchido após o fetch; usado como fonte para filtrar.
+  var allItems = [];
+
+  // Lê a página da URL (?page=N), limitando ao total informado.
+  function currentPage(totalPages) {
+    var page = parseInt(new URLSearchParams(window.location.search).get("page"), 10);
+    if (isNaN(page) || page < 1) return 1;
+    if (page > totalPages) return totalPages;
+    return page;
+  }
+
+  function renderGrid(items, page) {
+    var start = (page - 1) * pageSize;
+    var pageItems = items.slice(start, start + pageSize);
+
+    if (!pageItems.length) {
+      grid.innerHTML = query
+        ? '<p class="empty">Nenhum Souza encontrado para "' + escapeHtml(query) + '".</p>'
+        : '<p class="empty">Nenhum Souza por aqui ainda.</p>';
+      return;
+    }
+
+    grid.innerHTML = pageItems.map(cardHtml).join("");
+  }
+
+  function renderPagination(totalPages, page) {
+    if (!pagination) return;
+    if (totalPages <= 1) {
+      pagination.innerHTML = "";
+      return;
+    }
+
+    var html = "";
+
+    if (page > 1) {
+      html += '<a class="page-link page-nav" href="' + pageHref(page - 1) + '" rel="prev">&larr; Anterior</a>';
+    } else {
+      html += '<span class="page-disabled page-nav">&larr; Anterior</span>';
+    }
+
+    pageTokens(page, totalPages).forEach(function (token) {
+      if (token === "...") {
+        html += '<span class="page-ellipsis">&hellip;</span>';
+      } else if (token === page) {
+        html += '<span class="page-current" aria-current="page">' + token + "</span>";
+      } else {
+        html += '<a class="page-link" href="' + pageHref(token) + '">' + token + "</a>";
+      }
+    });
+
+    if (page < totalPages) {
+      html += '<a class="page-link page-nav" href="' + pageHref(page + 1) + '" rel="next">Próximo &rarr;</a>';
+    } else {
+      html += '<span class="page-disabled page-nav">Próximo &rarr;</span>';
+    }
+
+    pagination.innerHTML = html;
+  }
+
+  // Filtra pelo nome (título derivado do arquivo) e renderiza grid + paginação.
+  function apply() {
+    var items = query
+      ? allItems.filter(function (item) {
+          return titleFromFile(item.souza.file).indexOf(query) !== -1;
+        })
+      : allItems;
 
     var totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    var page = currentPage(totalPages);
+    renderGrid(items, page);
+    renderPagination(totalPages, page);
+  }
 
-    // Lê a página da URL (?page=N), limitando ao intervalo válido.
-    function currentPage() {
-      var raw = new URLSearchParams(window.location.search).get("page");
-      var page = parseInt(raw, 10);
-      if (isNaN(page) || page < 1) return 1;
-      if (page > totalPages) return totalPages;
-      return page;
-    }
+  // Busca ao vivo: normaliza o termo, volta para a página 1, sincroniza a URL
+  // (sem reload) e re-renderiza. Debounce para não filtrar a cada tecla.
+  function setupSearch() {
+    if (!searchInput) return;
 
-    function renderGrid(page) {
-      var start = (page - 1) * pageSize;
-      var pageItems = items.slice(start, start + pageSize);
+    searchInput.value = query;
 
-      if (!pageItems.length) {
-        grid.innerHTML = '<p class="empty">Nenhum Souza por aqui ainda.</p>';
-        return;
-      }
-
-      grid.innerHTML = pageItems.map(cardHtml).join("");
-    }
-
-    function renderPagination(page) {
-      if (!pagination) return;
-      if (totalPages <= 1) {
-        pagination.innerHTML = "";
-        return;
-      }
-
-      var html = "";
-
-      if (page > 1) {
-        html += '<a class="page-link page-nav" href="' + pageHref(page - 1) + '" rel="prev">&larr; Anterior</a>';
-      } else {
-        html += '<span class="page-disabled page-nav">&larr; Anterior</span>';
-      }
-
-      pageTokens(page, totalPages).forEach(function (token) {
-        if (token === "...") {
-          html += '<span class="page-ellipsis">&hellip;</span>';
-        } else if (token === page) {
-          html += '<span class="page-current" aria-current="page">' + token + "</span>";
-        } else {
-          html += '<a class="page-link" href="' + pageHref(token) + '">' + token + "</a>";
-        }
-      });
-
-      if (page < totalPages) {
-        html += '<a class="page-link page-nav" href="' + pageHref(page + 1) + '" rel="next">Próximo &rarr;</a>';
-      } else {
-        html += '<span class="page-disabled page-nav">Próximo &rarr;</span>';
-      }
-
-      pagination.innerHTML = html;
-    }
-
-    var page = currentPage();
-    renderGrid(page);
-    renderPagination(page);
+    var timer;
+    searchInput.addEventListener("input", function () {
+      clearTimeout(timer);
+      var value = this.value;
+      timer = setTimeout(function () {
+        query = value.trim().toLowerCase();
+        history.replaceState(null, "", urlFor(1, pageSize, query));
+        apply();
+      }, 200);
+    });
   }
 
   setupSizeSelect();
+  setupSearch();
 
   fetch("/api/souzas")
     .then(function (res) {
       if (!res.ok) throw new Error("status " + res.status);
       return res.json();
     })
-    .then(render)
+    .then(function (souzas) {
+      // souzas está em ordem cronológica; exibimos os mais recentes primeiro,
+      // mantendo o número original (posição de chegada) de cada card.
+      allItems = souzas.map(function (souza, index) {
+        return { souza: souza, number: index + 1 };
+      }).reverse();
+      apply();
+    })
     .catch(function () {
       grid.innerHTML = '<p class="empty">Não foi possível carregar a galeria. Tente recarregar a página.</p>';
     });

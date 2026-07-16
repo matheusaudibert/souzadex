@@ -264,13 +264,52 @@ a:hover {
   .grid {
     grid-template-columns: 1fr;
   }
+
+  .search-control {
+    flex-basis: 100%;
+    max-width: none;
+  }
 }
 
 /* Toolbar */
 .toolbar {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+.search-control {
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+
+.search-control input[type="search"] {
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-control input[type="search"]::placeholder {
+  color: var(--text-muted);
+}
+
+.search-control input[type="search"]:hover {
+  border-color: var(--text-muted);
+}
+
+.search-control input[type="search"]:focus {
+  outline: none;
+  border-color: var(--link);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
 }
 
 .page-size-control {
