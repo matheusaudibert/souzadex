@@ -23,13 +23,17 @@ O arquivo `souzas.js` é gerado automaticamente por um workflow do GitHub Action
    - `astronauta.png` aparece como "astronauta"
    - `souza-samurai.jpg` aparece como "souza samurai" (hífens e underscores viram espaço)
 4. No seu fork, crie uma branch nova para a contribuição (não use a `main`).
-5. Adicione o arquivo à pasta `assets/images/` com um commit seguindo o padrão `feat: add [nome-da-imagem] to souzadex`.
+5. Adicione o(s) arquivo(s) à pasta `assets/images/`, cada um com um commit
+   seguindo o padrão `feat: add [nome-da-imagem] to souzadex`.
 6. Abra o Pull Request da sua branch para a `main` do repositório e preencha o checklist do template.
 7. Aguarde a moderação. Depois do merge na `main`, o card aparece na galeria automaticamente.
 
 ### Requisitos da imagem
 
-- Apenas 1 imagem por Pull Request.
+- Pode incluir várias imagens no mesmo Pull Request — cada uma precisa
+  seguir as regras abaixo. Um check automático roda no PR e valida
+  formato, pasta e nomes duplicados; se ele falhar, corrija e envie
+  outro commit.
 - Formatos aceitos: `.jpg`, `.jpeg`, `.png` ou `.gif`.
 - A imagem deve estar em `assets/images/`.
 - A imagem deve ser do Souza, gerada por IA.
