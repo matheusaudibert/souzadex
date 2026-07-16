@@ -8,14 +8,14 @@
   <meta name="description" content="Galeria de fotos de IA do @souzaa.dev">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Souzadex">
-  <meta property="og:description" content="Galeria de fotos de IA do @souzaa.dev">
-  <meta property="og:url" content="https://souzadex.vercel.app/">
+  <meta property="og:description" content="Contribuidores com mais imagens na galeria.">
+  <meta property="og:url" content="https://souzadex.vercel.app/ranking.html">
   <meta property="og:image" content="https://souzadex.vercel.app/assets/preview.png">
   <meta property="og:image:width" content="968">
   <meta property="og:image:height" content="443">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Souzadex">
-  <meta name="twitter:description" content="Galeria de fotos de IA do @souzaa.dev">
+  <meta name="twitter:title" content="Ranking — Souzadex">
+  <meta name="twitter:description" content="Contribuidores com mais imagens na galeria.">
   <meta name="twitter:image" content="https://souzadex.vercel.app/assets/preview.png">
   <link rel="icon" href="assets/icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="styles/style.css">
@@ -30,7 +30,7 @@
         Souzadex
       </a>
       <nav class="header-nav">
-        <a href="./">Home</a>
+        <a href="index.html">Home</a>
         <a href="faq.html">FAQ</a>
         <a href="ranking.html">Ranking</a>
       </nav>
@@ -40,13 +40,6 @@
         <span></span>
       </button>
       <nav class="header-links">
-        <a class="download-original" href="https://raw.githubusercontent.com/matheusaudibert/souzadex/main/assets/images/original.jpeg">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/>
-            <path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/>
-          </svg>
-          Baixe o souza original
-        </a>
         <a href="https://github.com/matheusaudibert/souzadex" target="_blank" rel="noopener">Dê uma estrela
           no repositório</a>
         <a href="https://github.com/matheusaudibert/souzadex/blob/main/CONTRIBUTING.md#enviando-um-souza"
@@ -63,31 +56,10 @@
     </div>
   </header>
 
-  <main class="container">
-    <div class="toolbar">
-      <div class="search-control">
-        <input id="search" type="search" placeholder="Buscar por nome…"
-          aria-label="Buscar Souza por nome" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="page-size-control">
-        <span id="page-size-label">Souzas por página:</span>
-        <div class="page-size-select" id="page-size">
-          <button type="button" class="page-size-trigger" id="page-size-trigger"
-            aria-haspopup="listbox" aria-expanded="false"
-            aria-labelledby="page-size-label page-size-value">
-            <span class="page-size-value" id="page-size-value"></span>
-            <svg class="page-size-arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-              <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"
-                stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <ul class="page-size-menu" id="page-size-menu" role="listbox"
-            aria-labelledby="page-size-label" hidden></ul>
-        </div>
-      </div>
-    </div>
-    <div class="grid" id="grid"></div>
-    <nav class="pagination" id="pagination" aria-label="Paginação"></nav>
+  <main class="container ranking">
+    <h1 class="ranking-title">Ranking</h1>
+    <p class="ranking-subtitle">Contribuidores com mais imagens na galeria.</p>
+    <div class="ranking-list" id="ranking-list"></div>
   </main>
 
   <footer class="footer">
@@ -96,7 +68,7 @@
     </div>
   </footer>
 
-  <script src="scripts/script.js"></script>
+  <script src="scripts/ranking.js"></script>
   <script src="scripts/menu.js"></script>
 </body>
 

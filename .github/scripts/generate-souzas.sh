@@ -1,33 +1,31 @@
 set -euo pipefail
 
-# Atualização INCREMENTAL do souzas.js:
+# Atualização INCREMENTAL do souzas.json:
 #   - entradas existentes são preservadas exatamente como estão, na mesma ordem
 #     (nunca reatribui autor nem reordena o que já foi registrado)
 #   - entradas de imagens que não existem mais são removidas
 #   - imagens novas entram sempre no FIM da lista, em ordem de adição no git
 
-declare -A known
-kept_lines=""
+kept_json="[]"
 
-if [ -f souzas.js ]; then
-  while IFS= read -r line; do
-    file=$(sed -n 's/.*file: "\([^"]*\)".*/\1/p' <<<"$line")
+if [ -f souzas.json ]; then
+  while IFS= read -r entry; do
+    file=$(jq -rn --argjson e "$entry" '$e.file')
     [ -z "$file" ] && continue
     # git ls-files em vez de [ -e ]: é case-sensitive mesmo em filesystem
     # case-insensitive (Windows/mac), senão entradas de arquivos renomeados
     # para minúsculo sobrevivem e duplicam.
     if git ls-files --error-unmatch "assets/images/$file" >/dev/null 2>&1; then
-      kept_lines+="$line"$'\n'
-      known["$file"]=1
+      kept_json=$(jq -cn --argjson acc "$kept_json" --argjson e "$entry" '$acc + [$e]')
     fi
-  done < souzas.js
+  done < <(jq -c '.[]' souzas.json 2>/dev/null)
 fi
 
-entries=""
+new_entries=""
 shopt -s nullglob nocaseglob
 for f in assets/images/*.{jpg,jpeg,png,gif}; do
   base=$(basename "$f")
-  if [ -n "${known[$base]:-}" ]; then
+  if jq -e --arg f "$base" 'map(.file) | index($f) != null' <<<"$kept_json" >/dev/null; then
     continue
   fi
   # --follow rastreia renames: o commit de adição é o do arquivo original,
@@ -46,22 +44,24 @@ for f in assets/images/*.{jpg,jpeg,png,gif}; do
     login=$(git show -s --format=%an "$commit")
     id=""
   fi
-  entries+="$ts|$base|$login|$id"$'\n'
+  new_entries+="$ts|$base|$login|$id"$'\n'
 done
 shopt -u nullglob nocaseglob
 
-{
-  echo "const SOUZAS = ["
-  printf '%s' "$kept_lines"
-  printf '%s' "$entries" | sort -t'|' -k1,1n | while IFS='|' read -r ts file login id; do
+new_json="[]"
+if [ -n "$new_entries" ]; then
+  new_json=$(printf '%s' "$new_entries" | sort -t'|' -k1,1n | while IFS='|' read -r ts file login id; do
     if [ -n "$id" ]; then
-      echo "  { file: \"$file\", author: \"$login\", authorId: $id },"
+      jq -cn --arg file "$file" --arg author "$login" --argjson authorId "$id" \
+        '{file: $file, author: $author, authorId: $authorId}'
     else
-      echo "  { file: \"$file\", author: \"$login\" },"
+      jq -cn --arg file "$file" --arg author "$login" \
+        '{file: $file, author: $author}'
     fi
-  done
-  echo "];"
-} > souzas.js
+  done | jq -cs '.')
+fi
 
-echo "souzas.js gerado:"
-cat souzas.js
+jq -n --argjson kept "$kept_json" --argjson new "$new_json" '$kept + $new' > souzas.json
+
+echo "souzas.json gerado:"
+cat souzas.json

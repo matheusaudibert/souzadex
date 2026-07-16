@@ -45,16 +45,16 @@ jobs:
             git commit -m "chore: renomeia imagens para minusculo"
           fi
 
-      - name: Gerar souzas.js
+      - name: Gerar souzas.json
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/generate-souzas.sh
 
       - name: Commitar e enviar mudanças
         run: |
-          if ! git diff --quiet souzas.js; then
-            git add souzas.js
-            git commit -m "chore: atualiza souzas.js"
+          if ! git diff --quiet souzas.json; then
+            git add souzas.json
+            git commit -m "chore: atualiza souzas.json"
           fi
           if [ "$(git rev-list --count origin/main..HEAD)" -eq 0 ]; then
             echo "Nada para enviar."
