@@ -19,11 +19,36 @@
       : "https://github.com/" + souza.author + ".png?size=" + size;
   }
 
-  // SOUZAS está em ordem cronológica; exibimos os mais recentes primeiro, mas
-  // mantendo o número original (posição de chegada) de cada card.
-  var items = SOUZAS.map(function (souza, index) {
-    return { souza: souza, number: index + 1 };
-  }).reverse();
+  // Imagens vêm direto do repo no GitHub, não do build da Vercel: assim uma
+  // imagem nova aparece sem precisar de um novo deploy.
+  function imageUrl(file) {
+    return "https://raw.githubusercontent.com/matheusaudibert/souzadex/main/assets/images/" + encodeURIComponent(file);
+  }
+
+  function downloadImage(url, filename) {
+    fetch(url)
+      .then(function (res) { return res.blob(); })
+      .then(function (blob) {
+        var objectUrl = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(objectUrl);
+      });
+  }
+
+  // Link cross-origin: o atributo download sozinho não força o save-as,
+  // então baixamos via blob.
+  var downloadOriginal = document.querySelector(".download-original");
+  if (downloadOriginal) {
+    downloadOriginal.addEventListener("click", function (event) {
+      event.preventDefault();
+      downloadImage(imageUrl("original.jpeg"), "original.jpeg");
+    });
+  }
 
   // Lê o tamanho da página da URL (?size=N), aceitando só os valores válidos.
   function currentSize() {
@@ -32,16 +57,6 @@
   }
 
   var pageSize = currentSize();
-  var totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-
-  // Lê a página da URL (?page=N), limitando ao intervalo válido.
-  function currentPage() {
-    var raw = new URLSearchParams(window.location.search).get("page");
-    var page = parseInt(raw, 10);
-    if (isNaN(page) || page < 1) return 1;
-    if (page > totalPages) return totalPages;
-    return page;
-  }
 
   // Monta a URL preservando o tamanho escolhido (omitindo o que for padrão).
   function urlFor(page, size) {
@@ -63,7 +78,7 @@
     return (
       '<article class="card" data-name="' + title + '">' +
       '<a class="card-image" href="souza.html?foto=' + encodeURIComponent(souza.file) + '">' +
-      '  <img src="assets/images/' + souza.file + '" alt="' + title + '" loading="lazy">' +
+      '  <img src="' + imageUrl(souza.file) + '" alt="' + title + '" loading="lazy">' +
       "</a>" +
       '<div class="card-info">' +
       '  <h2 class="card-title">' +
@@ -77,18 +92,6 @@
       "</div>" +
       "</article>"
     );
-  }
-
-  function renderGrid(page) {
-    var start = (page - 1) * pageSize;
-    var pageItems = items.slice(start, start + pageSize);
-
-    if (!pageItems.length) {
-      grid.innerHTML = '<p class="empty">Nenhum Souza por aqui ainda.</p>';
-      return;
-    }
-
-    grid.innerHTML = pageItems.map(cardHtml).join("");
   }
 
   // Constrói a sequência de páginas exibidas, com "..." quando há muitas:
@@ -113,41 +116,7 @@
     return tokens;
   }
 
-  function renderPagination(page) {
-    if (!pagination) return;
-    if (totalPages <= 1) {
-      pagination.innerHTML = "";
-      return;
-    }
-
-    var html = "";
-
-    if (page > 1) {
-      html += '<a class="page-link page-nav" href="' + pageHref(page - 1) + '" rel="prev">&larr; Anterior</a>';
-    } else {
-      html += '<span class="page-disabled page-nav">&larr; Anterior</span>';
-    }
-
-    pageTokens(page, totalPages).forEach(function (token) {
-      if (token === "...") {
-        html += '<span class="page-ellipsis">&hellip;</span>';
-      } else if (token === page) {
-        html += '<span class="page-current" aria-current="page">' + token + "</span>";
-      } else {
-        html += '<a class="page-link" href="' + pageHref(token) + '">' + token + "</a>";
-      }
-    });
-
-    if (page < totalPages) {
-      html += '<a class="page-link page-nav" href="' + pageHref(page + 1) + '" rel="next">Próximo &rarr;</a>';
-    } else {
-      html += '<span class="page-disabled page-nav">Próximo &rarr;</span>';
-    }
-
-    pagination.innerHTML = html;
-  }
-
-  // Preenche o seletor e volta para a página 1 ao trocar o tamanho.
+  // Preenche o seletor de tamanho de página.
   function setupSizeSelect() {
     if (!sizeSelect) return;
 
@@ -164,8 +133,84 @@
     });
   }
 
-  var page = currentPage();
-  renderGrid(page);
-  renderPagination(page);
+  function render(souzas) {
+    // souzas está em ordem cronológica; exibimos os mais recentes primeiro, mas
+    // mantendo o número original (posição de chegada) de cada card.
+    var items = souzas.map(function (souza, index) {
+      return { souza: souza, number: index + 1 };
+    }).reverse();
+
+    var totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+
+    // Lê a página da URL (?page=N), limitando ao intervalo válido.
+    function currentPage() {
+      var raw = new URLSearchParams(window.location.search).get("page");
+      var page = parseInt(raw, 10);
+      if (isNaN(page) || page < 1) return 1;
+      if (page > totalPages) return totalPages;
+      return page;
+    }
+
+    function renderGrid(page) {
+      var start = (page - 1) * pageSize;
+      var pageItems = items.slice(start, start + pageSize);
+
+      if (!pageItems.length) {
+        grid.innerHTML = '<p class="empty">Nenhum Souza por aqui ainda.</p>';
+        return;
+      }
+
+      grid.innerHTML = pageItems.map(cardHtml).join("");
+    }
+
+    function renderPagination(page) {
+      if (!pagination) return;
+      if (totalPages <= 1) {
+        pagination.innerHTML = "";
+        return;
+      }
+
+      var html = "";
+
+      if (page > 1) {
+        html += '<a class="page-link page-nav" href="' + pageHref(page - 1) + '" rel="prev">&larr; Anterior</a>';
+      } else {
+        html += '<span class="page-disabled page-nav">&larr; Anterior</span>';
+      }
+
+      pageTokens(page, totalPages).forEach(function (token) {
+        if (token === "...") {
+          html += '<span class="page-ellipsis">&hellip;</span>';
+        } else if (token === page) {
+          html += '<span class="page-current" aria-current="page">' + token + "</span>";
+        } else {
+          html += '<a class="page-link" href="' + pageHref(token) + '">' + token + "</a>";
+        }
+      });
+
+      if (page < totalPages) {
+        html += '<a class="page-link page-nav" href="' + pageHref(page + 1) + '" rel="next">Próximo &rarr;</a>';
+      } else {
+        html += '<span class="page-disabled page-nav">Próximo &rarr;</span>';
+      }
+
+      pagination.innerHTML = html;
+    }
+
+    var page = currentPage();
+    renderGrid(page);
+    renderPagination(page);
+  }
+
   setupSizeSelect();
+
+  fetch("/api/souzas")
+    .then(function (res) {
+      if (!res.ok) throw new Error("status " + res.status);
+      return res.json();
+    })
+    .then(render)
+    .catch(function () {
+      grid.innerHTML = '<p class="empty">Não foi possível carregar a galeria. Tente recarregar a página.</p>';
+    });
 })();
