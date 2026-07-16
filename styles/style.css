@@ -143,6 +143,27 @@ a:hover {
   color: var(--text);
 }
 
+.download-original {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.header-links a.download-original {
+  color: var(--text-muted);
+}
+
+.download-original:hover {
+  color: var(--link);
+  border-color: var(--link);
+  text-decoration: none;
+}
+
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -210,6 +231,12 @@ a:hover {
 
   .header-links a + a {
     border-top: 1px solid var(--border);
+  }
+
+  .header-links a.download-original {
+    color: var(--text);
+    border: 0;
+    border-radius: 0;
   }
 }
 
@@ -294,6 +321,30 @@ a:hover {
 .card-authors img {
   display: block;
   border-radius: 4px;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--text-muted);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.card-download:hover {
+  color: var(--link);
+  border-color: var(--link);
 }
 
 /* Detail page */
